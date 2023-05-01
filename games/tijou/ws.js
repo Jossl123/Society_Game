@@ -10,6 +10,7 @@ function handleTijou(wss, ws){
                 if (!room)send(ws, "error", "noRoom")
                 room.addPlayer(ws)
                 ws.room = room
+                send(ws, "playerId", {playerId: room.players.length-1})
                 break;
             case "startGame":
                 ws.room.start()

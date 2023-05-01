@@ -56,6 +56,7 @@ class Tijou extends Game{
         this.players.forEach(player => {
             player.ws.send(JSON.stringify({title: "hand", body: player.cards}))
         })
+        this.sendToAllPlayers("board", this.players.map(p => p.pawns))
     }
     shuffle(deck){
         deck.sort(() => Math.random() - 0.5);
@@ -79,7 +80,6 @@ class Tijou extends Game{
             case 2:
             case 12:
             case 13:
-                console.log(card[1])
                 if(option == 0)player.move(pawnIndex,card[1])
                 else if (option == 1)player.enterPawn(pawnIndex)
                 break;
@@ -88,7 +88,7 @@ class Tijou extends Game{
                 break;
         }
         player.sendHand()
-        this.sendToAllPlayers("positions", this.players.map(p => p.pawns))
+        this.sendToAllPlayers("board", this.players.map(p => p.pawns))
     }
 };
 

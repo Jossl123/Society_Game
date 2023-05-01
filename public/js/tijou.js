@@ -6,6 +6,10 @@ ws.onopen = (event) => {
 };
 
 let hand = []
+let board = []
+let choosenCard = -1
+let choosenPawn = -1
+let id 
 ws.onmessage = (event) => {
     let data = JSON.parse(event.data)
     let title = data.title
@@ -14,12 +18,17 @@ ws.onmessage = (event) => {
         case "error":
             console.log("Error : " + body)
             break;
+        case "playerId": 
+            id = body.playerId
+            break;
         case "hand":
             hand = body.cards
             showHand()
             break;
-        case "positions":
-            console.log(body);
+        case "board":
+            console.log(body)
+            board = body
+            showBoard()
             break;
         default:
             console.log(title)
@@ -27,12 +36,33 @@ ws.onmessage = (event) => {
     }
 };
 
+function toCard(card){
+    let res = card[1]
+    if (card[1] == 11)res = "J"
+    if (card[1] == 12)res = "Q"
+    if (card[1] == 13)res = "K"
+    if (card[1] == 14)res = "Joker"
+    return res
+}
+
 function showHand(){
     res = ""
-    hand.forEach(card=>{
-        res+=card[1] + ","
-    })
+    for (let i = 0; i < hand.length; i++) {
+        let card = hand[i]
+        res+=`<button onclick="chooseCard(${i})">${toCard(card)}</button>`
+    }
     document.getElementById("hand").innerHTML = res
+}
+
+function showBoard(){
+    document.getElementById("board").innerHTML = ""
+    for (let i = 0; i < board.length; i++) {
+        console.log("t1es")
+        for (let j = 0; j < board[i].length; j++) {
+            console.log("te2s")
+            document.getElementById("board").innerHTML+=`<button class="pawn" onclick="choosePawn(${j})" >pawn pos : ${board[i][j]}</button>`
+        }
+    }
 }
 
 function start(){
@@ -41,6 +71,18 @@ function start(){
     s.parentNode.removeChild(s)
 }
 
-function playCard(index, pawnIndex = 0, option = 0){
+function chooseCard(i){
+    choosenCard = i
+    document.getElementById("hand").innerHTML = "choose a pawn"
+}
+
+function choosePawn(i){
+    choosenPawn = i
+    playCard(choosenCard, choosenPawn)
+}
+
+function playCard(index, pawnIndex, option = 0){
+    document.getElementById("hand").innerHTML = "choose a pawn"
+    if (board[id][pawnIndex] == -1)option = 1
     send("playCard", {cardIndex: index, pawnIndex: pawnIndex, option: option})
 }
