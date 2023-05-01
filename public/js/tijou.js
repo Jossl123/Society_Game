@@ -1,4 +1,4 @@
-var ws = new WebSocket(`ws:${window.location.host}`, "protocolOne");
+var ws = new WebSocket(`ws:${window.location.host}/tijou`, "protocolOne");
 ws.onopen = (event) => {
     const urlParams = new URLSearchParams(window.location.search);
     const roomId = urlParams.get("roomId");
@@ -19,6 +19,7 @@ ws.onmessage = (event) => {
             window.location.replace(`${window.location.href}?roomId=${body.roomId}`);
             break;
         default:
+            console.log(title)
             break;
     }
 };
@@ -45,4 +46,8 @@ function send(title, data = {}){
 
 function roomJoined(roomId){
     document.getElementsByTagName("body")[0].innerHTML = "game " + roomId
+}
+
+function start(){
+    send("startGame")
 }

@@ -1,16 +1,18 @@
+const Game = require("../game.js")
+const send = require("../../utils.js")
 class Player{
     constructor(ws){
-        this.cards = [] 
         this.ws = ws
+        this.cards = [] 
     }
     turn(){
         return this.cards.shift()
     }
 }
 
-class Tijou{
-    constructor(wsPlayer1){
-        this.gameType = "tijou"
+class Tijou extends Game{
+    constructor(){
+        super("tijou", 4)
         this.cards = []
         for (let i = 0; i < 4; i++) {
             for (let j = 0; j < 13; j++) {
@@ -19,7 +21,7 @@ class Tijou{
         }
         for (let i = 0; i < 2; i++) {this.cards.push([4, 14])}//joker
         this.discard = []
-        this.players = [new Player(wsPlayer1)]
+        this.players = []
         this.indexPlayerTurn = 0
     }
     nextTurn(){
@@ -43,6 +45,17 @@ class Tijou{
     }
     shuffle(deck){
         deck.sort(() => Math.random() - 0.5);
+    }
+    addPlayer(ws){
+        if (this.canAddPlayer())this.players.push(new Player(ws))
+        console.log("add player")
+    }
+    start(){
+        this.hasStarted = true
+        this.players.forEach(player => {
+            console.log("test")
+            send(player.ws, "test")
+        })
     }
 };
 

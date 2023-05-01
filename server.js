@@ -5,8 +5,10 @@ const http = require('http');
 const app = express();
 const server = http.createServer(app);
 const wss = new WebSocket.Server({ server });
+const send = require("./utils.js")
 
-const Tijou = require("./tijou.js")
+const Tijou = require("./games/tijou/tijou.js")
+const handleTijou = require("./games/tijou/ws.js")
 
 app.use(express.json())
 app.use(express.static(__dirname + '/public/'));
@@ -20,17 +22,15 @@ app.get("/rooms", (req, res) =>  {
 })
 
 app.get("/play", (req, res) =>  {
-    if (req.query.roomId && wss.rooms.hasOwnProperty(req.query.roomId))return res.sendFile(__dirname + '/views/tijou.html')
+    if (req.query.roomId && wss.rooms.hasOwnProperty(req.query.roomId)){
+        return res.sendFile(__dirname + `/views/${wss.rooms[req.query.roomId].gameType}.html`)
+    }
     return res.redirect("/rooms")
 })
 
 app.use(function(req, res) {
     res.status(404).sendFile(__dirname + '/views/errors/404.html');
 });
-
-function send(ws, title, body = {}){
-    ws.send(JSON.stringify({title: title, body: body}))
-}
 
 function handleRooms(ws){
     send(ws, "rooms", Object.keys(wss.rooms))
@@ -60,21 +60,6 @@ function createGameFromType(gameType){
     return new Tijou()
 }
 
-function handleTijou(ws){
-    ws.on('message', (message) => {
-        message = JSON.parse(message)
-        var title = message.title
-        var body = message.body
-        switch (title) {
-            case "join":
-                if (!wss.games[ws.game][body.roomId])send("error", "noRoom")
-                wss.games[ws.game][body.roomId].push(ws)
-                break;
-            default: console.log(body);
-        }
-    });
-}
-
 wss.rooms = {}
 wss.on('connection', (ws, req) => {
     let url = req.url.slice(1)
@@ -83,7 +68,7 @@ wss.on('connection', (ws, req) => {
             handleRooms(ws)
             break;
         case "tijou":
-            handleTijou(ws)
+            handleTijou(wss, ws)
             break;
         default:
             break;
