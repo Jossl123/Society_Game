@@ -11,7 +11,7 @@ class Player{
         this.enterPos = playerId * (this.boardRowSize-1)
     }
     turn(){
-        return this.cards.shift()
+        send(this.ws, "yourTurn")
     }
     sendHand(){
         send(this.ws, "hand", {cards: this.cards})
@@ -37,11 +37,11 @@ class Tijou extends Game{
         this.shuffle(this.cards)
         this.discard = []
         this.players = []
-        this.indexPlayerTurn = 0
+        this.indexPlayerTurn = -1
     }
     nextTurn(){
         this.indexPlayerTurn = (this.indexPlayerTurn+1)%this.players.length
-        this.players.turn()
+        this.players[this.indexPlayerTurn].turn()
     }
     nextRound(){
         for (let i = 0; i < 5; i++) {
@@ -63,8 +63,19 @@ class Tijou extends Game{
         deck.sort(() => Math.random() - 0.5);
     }
     addPlayer(ws){
-        if (this.canAddPlayer())this.players.push(new Player(ws, this.players.length))
-        console.log("add player")
+        let reconnect = -1
+        for (let i = 0; i < this.players.length; i++) {
+            const player = this.players[i]
+            if(player.ws.readyState == ws.CLOSED)reconnect = i
+        }
+        if (reconnect != -1){
+            this.players[reconnect].ws = ws
+            if (this.hasStarted){
+                this.players[reconnect].sendHand()
+                this.sendPawnsPositions()
+            }
+        }
+        else if (this.canAddPlayer())this.players.push(new Player(ws, this.players.length))
     }
     sendHands(){
         this.players.forEach(player => {
@@ -78,25 +89,40 @@ class Tijou extends Game{
         this.hasStarted = true
         this.nextRound()
         this.sendHands()
+        this.nextTurn()
     }
-    playCard(playerId, cardIndex, pawnIndex, option){
-        let player = this.players[playerId]
-        let card = player.cards.splice(cardIndex, 1)[0]
+    cardAction(player, pawnIndex, card, action){
         switch (card[1]) {
             case 1:
             case 2:
             case 12:
             case 13:
-                if(option == 0)player.move(pawnIndex,card[1])
-                else if (option == 1)player.enterPawn(pawnIndex)
+                if(action == actions.MOVE)player.move(pawnIndex,card[1])
+                else if (action == actions.ENTER)player.enterPawn(pawnIndex)
                 break;
+            case 14:
+                break
             default:
                 player.move(pawnIndex,card[1])
                 break;
         }
-        player.sendHand()
+    }
+    playCard(playerId, cardIndex, pawnIndex, action){
+        let player = this.players[playerId]
+        if(playerId != this.indexPlayerTurn)return send(player.ws, "error", "notYourTurn")
+        let card = player.cards.splice(cardIndex, 1)[0]
+        this.cardAction(player, pawnIndex, card, action)
+        this.sendHands()
         this.sendPawnsPositions()
+        this.nextTurn()
     }
 };
+
+const actions = {
+    MOVE: "move",
+    ENTER: "enter",
+    BACKWARD: "backward",
+    EXCHANGE: "exchange"
+}
 
 module.exports = Tijou

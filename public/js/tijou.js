@@ -35,6 +35,9 @@ ws.onmessage = (event) => {
             let s = document.getElementById("start")
             s.parentNode.removeChild(s)
             break;
+        case "yourTurn":
+            document.getElementById("infos").innerHTML = "Your turn"
+            break;
         default:
             console.log(title)
             break;
@@ -42,7 +45,15 @@ ws.onmessage = (event) => {
 };
 
 function handleError(msg){
-    document.getElementsByTagName("body")[0].innerHTML = msg
+    switch (msg) {
+        case "notYourTurn":
+            document.getElementById("infos").innerHTML = "Not your turn"
+            break;
+    
+        default:
+            document.getElementsByTagName("body")[0].innerHTML = msg
+            break;
+    }
 }
 
 function toCard(card){
@@ -116,7 +127,7 @@ function showBoard(){
     }
     document.getElementById("board").innerHTML = boardMap
     for (let j = 0; j < pawnsPositions[playerId].length; j++) {
-        document.getElementById("board").innerHTML+=`<button class="pawn" onclick="choosePawn(${j})" >pawn pos : ${pawnsPositions[playerId][j]}</button>`
+        if (pawnsPositions[playerId][j] == -1)document.getElementById("board").innerHTML+=`<button class="pawn" onclick="choosePawn(${j})" >pawn</button>`
     }
 }
 
@@ -126,7 +137,7 @@ function start(){
 
 function chooseCard(i){
     choosenCard = i
-    document.getElementById("hand").innerHTML = "choose a pawn"
+    document.getElementById("infos").innerHTML = "Choose a pawn"
     if(choosenPawn !=-1) playCard(choosenCard, choosenPawn)
 }
 
@@ -135,9 +146,10 @@ function choosePawn(i){
     if(choosenCard != -1)playCard(choosenCard, choosenPawn)
 }
 
-function playCard(index, pawnIndex, option = 0){
-    if (pawnsPositions[playerId][pawnIndex] == -1)option = 1
-    send("playCard", {cardIndex: index, pawnIndex: pawnIndex, option: option})
+function playCard(index, pawnIndex, action = "move"){
+    if (pawnsPositions[playerId][pawnIndex] == -1)action = "enter"
+    send("playCard", {cardIndex: index, pawnIndex: pawnIndex, action: action})
     choosenPawn = -1
     choosenCard = -1
+    document.getElementById("infos").innerHTML = "Opponents turns"
 }
