@@ -6,10 +6,10 @@ ws.onopen = (event) => {
 };
 
 let hand = []
-let board = []
+let pawnsPositions = []
 let choosenCard = -1
 let choosenPawn = -1
-let id 
+let playerId 
 ws.onmessage = (event) => {
     let data = JSON.parse(event.data)
     let title = data.title
@@ -19,15 +19,15 @@ ws.onmessage = (event) => {
             console.log("Error : " + body)
             break;
         case "playerId": 
-            id = body.playerId
+            playerId = body.playerId
             break;
         case "hand":
             hand = body.cards
             showHand()
             break;
-        case "board":
+        case "pawnsPositions":
             console.log(body)
-            board = body
+            pawnsPositions = body
             showBoard()
             break;
         default:
@@ -38,6 +38,7 @@ ws.onmessage = (event) => {
 
 function toCard(card){
     let res = card[1]
+    if (card[1] == 1)res = "A"
     if (card[1] == 11)res = "J"
     if (card[1] == 12)res = "Q"
     if (card[1] == 13)res = "K"
@@ -54,32 +55,48 @@ function showHand(){
     document.getElementById("hand").innerHTML = res
 }
 
+function getBoardCellId(x, y){
+    let id = x
+    if(y>0){
+        if (x == rowSize-1)id=x+y
+        else if(x==0)id=cellNb-y
+    }
+    if (y==rowSize-1)id = cellNb-y-x
+    return id
+}
+
+function getPawnOnCell(id){
+    let offset = 5
+    let pawnIndex = -1
+    for (let p = 0; p < pawnsPositions.length; p++) {
+        if (pawnsPositions[p].indexOf((id+offset)%cellNb) != -1){
+            return pawnsPositions[p].indexOf((id+offset)%cellNb) 
+        }
+    }
+    return pawnIndex
+}
+let rowSize=10
+let cellNb = rowSize*2 + (rowSize-2)*2
+
 function showBoard(){
     let boardMap = ""
-    let offset = 6
-    for (let i = offset; i < 38+offset; i++) {
-        let pos = i%38
-        let pawnOnCell = false
-        let pawnIndex = -1
-        for (let p = 0; p < board.length; p++) {
-            if (board[p].indexOf(pos) != -1){
-                pawnOnCell = true
-                pawnIndex = board[p].indexOf(pos) 
+    for (let y = 0; y < rowSize; y++) {
+        for (let x= 0; x < rowSize; x++) {
+            let onBoard = (x==0||y==0||x==rowSize-1||y==rowSize-1)
+            if(onBoard){
+                let id = getBoardCellId(x, y)
+                let pawn = getPawnOnCell(id)
+                boardMap+=`<button class="boardCell"`
+                if (pawn != -1)boardMap+=`onclick="choosePawn(${pawn})" style="background-color: red"`
+                boardMap+=`>${id}</button>`
+            }else{
+                boardMap+=`<div class="boardEmptyCell"></div>`
             }
         }
-        if (pos-offset>10 && pos<29+offset && pos%2 == 1)for (let j = 0; j < 8; j++) {
-            boardMap+=`<div class="boardEmptyCell"></div>`
-        }
-
-        boardMap+=`<button class="boardCell"`
-        if (pawnOnCell)boardMap+=`onclick="choosePawn(${pawnIndex})" style="background-color: red"`
-        boardMap+=`>cell</button>`
     }
     document.getElementById("board").innerHTML = boardMap
-    for (let i = 0; i < board.length; i++) {
-        for (let j = 0; j < board[i].length; j++) {
-            document.getElementById("board").innerHTML+=`<button class="pawn" onclick="choosePawn(${j})" >pawn pos : ${board[i][j]}</button>`
-        }
+    for (let j = 0; j < pawnsPositions[playerId].length; j++) {
+        document.getElementById("board").innerHTML+=`<button class="pawn" onclick="choosePawn(${j})" >pawn pos : ${pawnsPositions[playerId][j]}</button>`
     }
 }
 
@@ -92,15 +109,17 @@ function start(){
 function chooseCard(i){
     choosenCard = i
     document.getElementById("hand").innerHTML = "choose a pawn"
+    if(choosenPawn !=-1) playCard(choosenCard, choosenPawn)
 }
 
 function choosePawn(i){
     choosenPawn = i
-    playCard(choosenCard, choosenPawn)
+    if(choosenCard != -1)playCard(choosenCard, choosenPawn)
 }
 
 function playCard(index, pawnIndex, option = 0){
-    document.getElementById("hand").innerHTML = "choose a pawn"
-    if (board[id][pawnIndex] == -1)option = 1
+    if (pawnsPositions[playerId][pawnIndex] == -1)option = 1
     send("playCard", {cardIndex: index, pawnIndex: pawnIndex, option: option})
+    choosenPawn = -1
+    choosenCard = -1
 }

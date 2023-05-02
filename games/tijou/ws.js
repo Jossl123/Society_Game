@@ -10,14 +10,15 @@ function handleTijou(wss, ws){
                 if (!room)send(ws, "error", "noRoom")
                 room.addPlayer(ws)
                 ws.room = room
-                send(ws, "playerId", {playerId: room.players.length-1})
+                ws.playerId = room.players.length-1
+                send(ws, "playerId", {playerId: ws.playerId})
                 break;
             case "startGame":
                 ws.room.start()
                 break;
             case "playCard":
                 if (!body.hasOwnProperty("cardIndex"))return send(ws, "error", "card error")
-                ws.room.playCard(body.cardIndex, body.pawnIndex, body.option)
+                ws.room.playCard(ws.playerId, body.cardIndex, body.pawnIndex, body.option)
                 break
             default: console.log(body);
         }

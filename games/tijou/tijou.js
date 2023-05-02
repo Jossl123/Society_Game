@@ -1,11 +1,14 @@
 const Game = require("../game.js")
 const send = require("../../utils.js")
 class Player{
-    constructor(ws, enterPos){
+    constructor(ws, playerId){
         this.ws = ws
         this.cards = [] 
         this.pawns = [-1, -1, -1]
-        this.enterPos = enterPos
+        this.playerId = playerId
+        this.boardRowSize = 10
+        this.boardCellNb = this.boardRowSize*2 + (this.boardRowSize-2)*2
+        this.enterPos = playerId * (this.boardRowSize-1)
     }
     turn(){
         return this.cards.shift()
@@ -17,9 +20,7 @@ class Player{
         if(this.pawns[i] == -1)this.pawns[i] = this.enterPos
     }
     move(i, n){
-        console.log(this.pawns[i])
-        if(this.pawns[i]!=-1)this.pawns[i] = (this.pawns[i] + n)%32
-        console.log(this.pawns[i])
+        if(this.pawns[i]!=-1)this.pawns[i] = (this.pawns[i] + n)%this.boardCellNb
     }
 }
 
@@ -56,24 +57,30 @@ class Tijou extends Game{
         this.players.forEach(player => {
             player.ws.send(JSON.stringify({title: "hand", body: player.cards}))
         })
-        this.sendToAllPlayers("board", this.players.map(p => p.pawns))
+        this.sendToAllPlayers("pawnsPositions", this.players.map(p => p.pawns))
     }
     shuffle(deck){
         deck.sort(() => Math.random() - 0.5);
     }
     addPlayer(ws){
-        if (this.canAddPlayer())this.players.push(new Player(ws, this.players.length * 9))
+        if (this.canAddPlayer())this.players.push(new Player(ws, this.players.length))
         console.log("add player")
     }
-    start(){
-        this.hasStarted = true
-        this.nextRound()
+    sendHands(){
         this.players.forEach(player => {
             player.sendHand()
         })
     }
-    playCard(cardIndex, pawnIndex, option){
-        let player = this.players[this.indexPlayerTurn]
+    sendPawnsPositions(){
+        this.sendToAllPlayers("pawnsPositions", this.players.map(p => p.pawns))
+    }
+    start(){
+        this.hasStarted = true
+        this.nextRound()
+        this.sendHands()
+    }
+    playCard(playerId, cardIndex, pawnIndex, option){
+        let player = this.players[playerId]
         let card = player.cards.splice(cardIndex, 1)[0]
         switch (card[1]) {
             case 1:
@@ -88,7 +95,7 @@ class Tijou extends Game{
                 break;
         }
         player.sendHand()
-        this.sendToAllPlayers("board", this.players.map(p => p.pawns))
+        this.sendPawnsPositions()
     }
 };
 
