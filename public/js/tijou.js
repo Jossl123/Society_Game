@@ -16,6 +16,7 @@ ws.onmessage = (event) => {
     let body = data.body
     switch (title) {
         case "error":
+            handleError(body)
             console.log("Error : " + body)
             break;
         case "playerId": 
@@ -30,11 +31,19 @@ ws.onmessage = (event) => {
             pawnsPositions = body
             showBoard()
             break;
+        case "gameStarted":
+            let s = document.getElementById("start")
+            s.parentNode.removeChild(s)
+            break;
         default:
             console.log(title)
             break;
     }
 };
+
+function handleError(msg){
+    document.getElementsByTagName("body")[0].innerHTML = msg
+}
 
 function toCard(card){
     let res = card[1]
@@ -93,9 +102,13 @@ function showBoard(){
             if(onBoard){
                 let id = getBoardCellId(x, y)
                 let pawnInfos = getPawnOnCell(id)
-                boardMap+=`<button class="boardCell"`
-                if (pawnInfos.id != -1)boardMap+=`onclick="choosePawn(${pawnInfos.id})" style="background-color: ${toColor(pawnInfos.player)}"`
-                boardMap+=`>${id}</button>`
+                boardMap+=`<div class="boardCell">`
+                if (pawnInfos.id != -1){
+                    boardMap+=`<button `
+                    if (pawnInfos.player == playerId)boardMap+=`onclick="choosePawn(${pawnInfos.id})" style="background-color: ${toColor(pawnInfos.player)}"`
+                    boardMap+=`>${id}</button>`
+                }
+                boardMap+=`</div>`
             }else{
                 boardMap+=`<div class="boardEmptyCell"></div>`
             }
@@ -109,8 +122,6 @@ function showBoard(){
 
 function start(){
     send("startGame")
-    let s = document.getElementById("start")
-    s.parentNode.removeChild(s)
 }
 
 function chooseCard(i){
