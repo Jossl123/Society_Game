@@ -55,11 +55,29 @@ function showHand(){
 }
 
 function showBoard(){
-    document.getElementById("board").innerHTML = ""
+    let boardMap = ""
+    let offset = 6
+    for (let i = offset; i < 38+offset; i++) {
+        let pos = i%38
+        let pawnOnCell = false
+        let pawnIndex = -1
+        for (let p = 0; p < board.length; p++) {
+            if (board[p].indexOf(pos) != -1){
+                pawnOnCell = true
+                pawnIndex = board[p].indexOf(pos) 
+            }
+        }
+        if (pos-offset>10 && pos<29+offset && pos%2 == 1)for (let j = 0; j < 8; j++) {
+            boardMap+=`<div class="boardEmptyCell"></div>`
+        }
+
+        boardMap+=`<button class="boardCell"`
+        if (pawnOnCell)boardMap+=`onclick="choosePawn(${pawnIndex})" style="background-color: red"`
+        boardMap+=`>cell</button>`
+    }
+    document.getElementById("board").innerHTML = boardMap
     for (let i = 0; i < board.length; i++) {
-        console.log("t1es")
         for (let j = 0; j < board[i].length; j++) {
-            console.log("te2s")
             document.getElementById("board").innerHTML+=`<button class="pawn" onclick="choosePawn(${j})" >pawn pos : ${board[i][j]}</button>`
         }
     }

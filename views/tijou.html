@@ -11,6 +11,25 @@
 <body>
     <p id="hand">hand</p>
     <div id="board"></div>
+    <style>
+        #board {
+            display: grid;
+            grid-template-columns: repeat(10, 4rem);
+            grid-template-rows: repeat(10, 4rem);
+            grid-column-gap: 0px;
+            grid-row-gap: 0px;
+        }
+        .boardCell{
+            border: solid 1px black;
+            height: 4rem;
+            width: 4rem;
+        }
+        .boardEmptyCell{
+            border: none;
+            height: 4rem;
+            width: 4rem;
+        }
+    </style>
     <button id="start" onclick="start()">start</button>
     <script src="./js/utils.js"></script>
     <script src="./js/tijou.js"></script>
