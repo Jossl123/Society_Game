@@ -46,6 +46,11 @@ function toCard(card){
     return res
 }
 
+function toColor(num){
+    let colors = ["red", "green", "blue", "yellow"]
+    return colors[num]
+}
+
 function showHand(){
     res = ""
     for (let i = 0; i < hand.length; i++) {
@@ -66,14 +71,16 @@ function getBoardCellId(x, y){
 }
 
 function getPawnOnCell(id){
-    let offset = 5
-    let pawnIndex = -1
+    let offset = 4
+    let res = {id: -1, player: -1}
     for (let p = 0; p < pawnsPositions.length; p++) {
         if (pawnsPositions[p].indexOf((id+offset)%cellNb) != -1){
-            return pawnsPositions[p].indexOf((id+offset)%cellNb) 
+            res.player = p
+            res.id = pawnsPositions[p].indexOf((id+offset)%cellNb) 
+            return res
         }
     }
-    return pawnIndex
+    return res
 }
 let rowSize=10
 let cellNb = rowSize*2 + (rowSize-2)*2
@@ -85,9 +92,9 @@ function showBoard(){
             let onBoard = (x==0||y==0||x==rowSize-1||y==rowSize-1)
             if(onBoard){
                 let id = getBoardCellId(x, y)
-                let pawn = getPawnOnCell(id)
+                let pawnInfos = getPawnOnCell(id)
                 boardMap+=`<button class="boardCell"`
-                if (pawn != -1)boardMap+=`onclick="choosePawn(${pawn})" style="background-color: red"`
+                if (pawnInfos.id != -1)boardMap+=`onclick="choosePawn(${pawnInfos.id})" style="background-color: ${toColor(pawnInfos.player)}"`
                 boardMap+=`>${id}</button>`
             }else{
                 boardMap+=`<div class="boardEmptyCell"></div>`
