@@ -19,7 +19,8 @@ class Player{
     enterPawn(i){
         if(this.pawns[i] == -1)this.pawns[i] = this.enterPos
     }
-    move(i, n){
+    move(i, n, eat=false){
+
         if(this.pawns[i]!=-1)this.pawns[i] = (this.pawns[i] + n)%this.boardCellNb
     }
 }
@@ -91,27 +92,91 @@ class Tijou extends Game{
         this.sendHands()
         this.nextTurn()
     }
-    cardAction(player, pawnIndex, card, action){
-        switch (card[1]) {
-            case 1:
-            case 2:
-            case 12:
-            case 13:
-                if(action == actions.MOVE)player.move(pawnIndex,card[1])
-                else if (action == actions.ENTER)player.enterPawn(pawnIndex)
-                break;
-            case 14:
-                break
-            default:
-                player.move(pawnIndex,card[1])
-                break;
+    CheckEatOnCell(player, pos){
+        for (let i = 0; i < this.players.length; i++) {
+            if (this.players[i].playerId != player.playerId){
+                for (let p = 0; p < this.players[i].pawns.length; p++) {
+                    console.log(pos, this.players[i].pawns[p])
+                    let opponentPawn = this.players[i].pawns[p];
+                    if (opponentPawn == pos)this.players[i].pawns[p] = -1
+                }
+            }
         }
     }
-    playCard(playerId, cardIndex, pawnIndex, action){
+    MoveAction(player, dist, pawnIndex, eat=false){
+        if(eat){
+            let pawn = player.pawns[pawnIndex]
+            for (let n = pawn; n < pawn+dist; n++) {
+                let pos = n%this.boardCellNb
+                this.CheckEatOnCell(player, pos)
+            }
+        }
+        player.move(pawnIndex,dist)
+    }
+    Exchange(player, pawnIndex, opponent, opponentPawnIndex){
+        let temp = player.pawns[pawnIndex]
+        if (temp == -1 || opponent.pawns[opponentPawnIndex] == -1) return console.log("error in exchange")
+        player.pawns[pawnIndex] = opponent.pawns[opponentPawnIndex]
+        opponent.pawns[opponentPawnIndex] = temp
+    }
+    Arrive(player, pawnIndex){
+        for (let i = 0; i < player.pawns.length; i++) {
+            if (player.pawns[i]==-1)return console.log("can't arrive cause not all pawns are on board")
+        }
+        player.pawns[pawnIndex] = this.boardCellNb
+    }
+    cardAction(player, pawnIndex, card, action, option=-1){
+        switch (card[1]) {
+            case 3:
+            case 6:
+            case 7:
+            case 8:
+            case 9:
+                if(action == actions.MOVE)this.MoveAction(player, card[1], pawnIndex)
+                break;
+            case 10:
+                if(action == actions.MOVE)this.MoveAction(player, card[1], pawnIndex)
+                else if (action == actions.ARRIVE)this.Arrive(player, pawnIndex)
+                break;
+            case 1:
+            case 12:
+            case 13:
+                if(player.pawns[pawnIndex] == -1)player.enterPawn(pawnIndex)
+                else if(action == actions.MOVE)this.MoveAction(player, card[1], pawnIndex)
+                break;
+            case 2:
+                if(player.pawns[pawnIndex] == -1)player.enterPawn(pawnIndex)
+                else if(action == actions.MOVE)this.MoveAction(player, card[1], pawnIndex)
+                else if (action == actions.BACKWARD)this.MoveAction(player, -card[1], pawnIndex, eat=true)
+                else if (action == actions.ARRIVE)this.Arrive(player, pawnIndex)
+                break;
+            case 4:
+                if (action == actions.ARRIVE)this.Arrive(player, pawnIndex)
+                else this.MoveAction(player, -card[1], pawnIndex)
+                break;
+            case 5:
+                if(action == actions.EXCHANGE)this.MoveAction(player, card[1], pawnIndex, eat=true)
+                else if (action == actions.ENTER)player.enterPawn(pawnIndex)
+                break;
+            case 11:
+                //TODO verify opponent existence
+                console.log(option)
+                this.Exchange(player, pawnIndex, this.players[option[0]], option[1])
+                break;
+            case 14:
+                this.cardAction(player, pawnIndex, [0, option], action)
+                break;
+            default:
+                console.log("card action error on card : "+ card[1])
+                break;
+        }
+        this.CheckEatOnCell(player, player.pawns[pawnIndex])
+    }
+    playCard(playerId, cardIndex, pawnIndex, action, option=-1){
         let player = this.players[playerId]
         if(playerId != this.indexPlayerTurn)return send(player.ws, "error", "notYourTurn")
         let card = player.cards.splice(cardIndex, 1)[0]
-        this.cardAction(player, pawnIndex, card, action)
+        this.cardAction(player, pawnIndex, card, action, option)
         this.sendHands()
         this.sendPawnsPositions()
         this.nextTurn()
@@ -122,7 +187,8 @@ const actions = {
     MOVE: "move",
     ENTER: "enter",
     BACKWARD: "backward",
-    EXCHANGE: "exchange"
+    EXCHANGE: "exchange",
+    ARRIVE: "arrive"
 }
 
 module.exports = Tijou

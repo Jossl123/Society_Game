@@ -145,10 +145,29 @@ function choosePawn(i){
     choosenPawn = i
     if(choosenCard != -1)playCard(choosenCard, choosenPawn)
 }
+let action = "move"
+function changeAction(n){
+    action = n
+}
+
+function askAction(cardNb, pawnIndex){
+    if (pawnsPositions[playerId][pawnIndex] == -1)action = "enter"
+    return action
+}
+
+function askJokerOption(){
+    return 2;
+}
+
+function askExchangeOption(){
+    return [0, 0]
+}
 
 function playCard(index, pawnIndex, action = "move"){
-    if (pawnsPositions[playerId][pawnIndex] == -1)action = "enter"
-    send("playCard", {cardIndex: index, pawnIndex: pawnIndex, action: action})
+    option = askAction(hand[index][1], pawnIndex)
+    if (hand[index][1] == 14) send("playCard", {cardIndex: index, pawnIndex: pawnIndex, action: action, option: askJokerOption()})
+    else if (hand[index][1] == 11) send("playCard", {cardIndex: index, pawnIndex: pawnIndex, action: action, option: askExchangeOption()})
+    else send("playCard", {cardIndex: index, pawnIndex: pawnIndex, action: action})
     choosenPawn = -1
     choosenCard = -1
     document.getElementById("infos").innerHTML = "Opponents turns"
