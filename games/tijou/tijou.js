@@ -20,8 +20,10 @@ class Player{
         if(this.pawns[i] == -1)this.pawns[i] = this.enterPos
     }
     move(i, n, eat=false){
-
-        if(this.pawns[i]!=-1)this.pawns[i] = (this.pawns[i] + n)%this.boardCellNb
+        if(this.pawns[i]!=-1){
+            this.pawns[i] = (this.pawns[i] + n)%this.boardCellNb
+            if (this.pawns[i]<0)this.pawns[i]+=this.boardCellNb
+        }
     }
 }
 
@@ -42,7 +44,8 @@ class Tijou extends Game{
     }
     nextTurn(){
         this.indexPlayerTurn = (this.indexPlayerTurn+1)%this.players.length
-        this.players[this.indexPlayerTurn].turn()
+        if (this.players[this.indexPlayerTurn].cards.length > 0) this.players[this.indexPlayerTurn].turn()
+        else this.nextRound()
     }
     nextRound(){
         for (let i = 0; i < 5; i++) {
@@ -55,10 +58,10 @@ class Tijou extends Game{
                 this.players[j].cards.push(this.cards.shift())
             }
         }
-        this.players.forEach(player => {
-            player.ws.send(JSON.stringify({title: "hand", body: player.cards}))
-        })
+        this.indexPlayerTurn = (this.indexPlayerTurn+1)%this.players.length
         this.sendToAllPlayers("pawnsPositions", this.players.map(p => p.pawns))
+        this.sendHands()
+        this.nextTurn()
     }
     shuffle(deck){
         deck.sort(() => Math.random() - 0.5);
@@ -89,8 +92,6 @@ class Tijou extends Game{
     start(){
         this.hasStarted = true
         this.nextRound()
-        this.sendHands()
-        this.nextTurn()
     }
     CheckEatOnCell(player, pos){
         for (let i = 0; i < this.players.length; i++) {
@@ -132,11 +133,11 @@ class Tijou extends Game{
             case 7:
             case 8:
             case 9:
-                if(action == actions.MOVE)this.MoveAction(player, card[1], pawnIndex)
+                this.MoveAction(player, card[1], pawnIndex)
                 break;
             case 10:
-                if(action == actions.MOVE)this.MoveAction(player, card[1], pawnIndex)
-                else if (action == actions.ARRIVE)this.Arrive(player, pawnIndex)
+                if (action == actions.ARRIVE)this.Arrive(player, pawnIndex)
+                else this.MoveAction(player, card[1], pawnIndex)
                 break;
             case 1:
             case 12:
@@ -147,7 +148,7 @@ class Tijou extends Game{
             case 2:
                 if(player.pawns[pawnIndex] == -1)player.enterPawn(pawnIndex)
                 else if(action == actions.MOVE)this.MoveAction(player, card[1], pawnIndex)
-                else if (action == actions.BACKWARD)this.MoveAction(player, -card[1], pawnIndex, eat=true)
+                else if (action == actions.BACKWARD)this.MoveAction(player, -card[1], pawnIndex, true)
                 else if (action == actions.ARRIVE)this.Arrive(player, pawnIndex)
                 break;
             case 4:
@@ -155,8 +156,7 @@ class Tijou extends Game{
                 else this.MoveAction(player, -card[1], pawnIndex)
                 break;
             case 5:
-                if(action == actions.EXCHANGE)this.MoveAction(player, card[1], pawnIndex, eat=true)
-                else if (action == actions.ENTER)player.enterPawn(pawnIndex)
+                this.MoveAction(player, card[1], pawnIndex, true)
                 break;
             case 11:
                 //TODO verify opponent existence

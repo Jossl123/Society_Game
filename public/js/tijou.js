@@ -87,11 +87,11 @@ function getBoardCellId(x, y){
         else if(x==0)id=cellNb-y
     }
     if (y==rowSize-1)id = cellNb-y-x
-    return id
+    return cellNb-id
 }
 
 function getPawnOnCell(id){
-    let offset = 4
+    let offset = 5
     let res = {id: -1, player: -1}
     for (let p = 0; p < pawnsPositions.length; p++) {
         if (pawnsPositions[p].indexOf((id+offset)%cellNb) != -1){
