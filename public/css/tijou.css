@@ -1,0 +1,47 @@
+
+html{
+    height: 100%;
+}
+body{
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    height: 100%;
+}
+#board {
+    display: grid;
+    grid-template-columns: repeat(10, 4rem);
+    grid-template-rows: repeat(10, 4rem);
+    grid-column-gap: 0px;
+    grid-row-gap: 0px;
+}
+.boardCell{
+    border: solid 1px black;
+    height: 4rem;
+    width: 4rem;
+}
+.boardEmptyCell{
+    border: none;
+    height: 4rem;
+    width: 4rem;
+}
+#hand{
+    position: absolute;
+    bottom: 0;
+    left: 0;
+}
+#hand .card{
+    padding: 0;
+    border: none;
+    position: relative;
+}
+#hand img{
+    transform: translate(0, -100%);
+    position: absolute;
+    width: 10rem;
+    transition: all 0.2s;
+}
+#hand img:hover{
+    width: 12rem;
+}

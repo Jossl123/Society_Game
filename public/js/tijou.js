@@ -57,13 +57,19 @@ function handleError(msg){
 }
 
 function toCard(card){
-    let res = card[1]
-    if (card[1] == 1)res = "A"
-    if (card[1] == 11)res = "J"
-    if (card[1] == 12)res = "Q"
-    if (card[1] == 13)res = "K"
-    if (card[1] == 14)res = "Joker"
-    return res
+    let name = card[1]
+    if (card[1] == 1)name = "ace"
+    else if (card[1] == 11)name = "jack"
+    else if (card[1] == 12)name = "queen"
+    else if (card[1] == 13)name = "king"
+    let color = ""
+    if (card[0] == 0)color = "clubs"
+    else if(card[0] == 1)color = "diamonds"
+    else if (card[0] == 2) color = "hearts"
+    else if (card[0] == 3) color = "spades"
+
+    if (card[1] == 14)return  "red_joker"
+    return name + "_of_" + color
 }
 
 function toColor(num){
@@ -75,7 +81,7 @@ function showHand(){
     res = ""
     for (let i = 0; i < hand.length; i++) {
         let card = hand[i]
-        res+=`<button onclick="chooseCard(${i})">${toCard(card)}</button>`
+        res+=`<button class="card" style="transform: rotate(${i*10}deg)" onclick="chooseCard(${i})"><img src="./img/playing_cards/${toCard(card)}.png"></img></button>`
     }
     document.getElementById("hand").innerHTML = res
 }
