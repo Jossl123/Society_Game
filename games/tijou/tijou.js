@@ -95,12 +95,10 @@ class Tijou extends Game{
     }
     CheckEatOnCell(player, pos){
         for (let i = 0; i < this.players.length; i++) {
-            if (this.players[i].playerId != player.playerId){
-                for (let p = 0; p < this.players[i].pawns.length; p++) {
-                    console.log(pos, this.players[i].pawns[p])
-                    let opponentPawn = this.players[i].pawns[p];
-                    if (opponentPawn == pos)this.players[i].pawns[p] = -1
-                }
+            for (let p = 0; p < this.players[i].pawns.length; p++) {
+                console.log(pos, this.players[i].pawns[p])
+                let opponentPawn = this.players[i].pawns[p];
+                if (opponentPawn == pos)this.players[i].pawns[p] = -1
             }
         }
     }
