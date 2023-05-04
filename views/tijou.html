@@ -5,12 +5,12 @@
     <meta charset="UTF-8">
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="./css/tijou.css">
     <title>Tijou</title>
 </head>
 
 <body>
     <p id="infos"></p>
-    <p id="hand">hand</p>
     <div id="board"></div>
     <div id="actions">
         <button onclick="changeAction('move')">Move</button>
@@ -19,26 +19,8 @@
         <button onclick="changeAction('exchange')">exchange</button>
         <button onclick="changeAction('arrive')">arrive</button>
     </div>
+    <div id="hand"></div>
     <div id="options"></div>
-    <style>
-        #board {
-            display: grid;
-            grid-template-columns: repeat(10, 4rem);
-            grid-template-rows: repeat(10, 4rem);
-            grid-column-gap: 0px;
-            grid-row-gap: 0px;
-        }
-        .boardCell{
-            border: solid 1px black;
-            height: 4rem;
-            width: 4rem;
-        }
-        .boardEmptyCell{
-            border: none;
-            height: 4rem;
-            width: 4rem;
-        }
-    </style>
     <button id="start" onclick="start()">start</button>
     <script src="./js/utils.js"></script>
     <script src="./js/tijou.js"></script>
