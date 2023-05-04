@@ -169,7 +169,7 @@ function askExchangeOption(){
     return [0, 0]
 }
 
-function playCard(index, pawnIndex, action = "move"){
+function playCard(index, pawnIndex){
     option = askAction(hand[index][1], pawnIndex)
     if (hand[index][1] == 14) send("playCard", {cardIndex: index, pawnIndex: pawnIndex, action: action, option: askJokerOption()})
     else if (hand[index][1] == 11) send("playCard", {cardIndex: index, pawnIndex: pawnIndex, action: action, option: askExchangeOption()})

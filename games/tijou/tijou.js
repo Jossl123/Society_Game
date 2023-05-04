@@ -41,6 +41,8 @@ class Tijou extends Game{
         this.discard = []
         this.players = []
         this.indexPlayerTurn = -1
+        this.boardRowSize = 10
+        this.boardCellNb = this.boardRowSize*2 + (this.boardRowSize-2)*2
     }
     nextTurn(){
         this.indexPlayerTurn = (this.indexPlayerTurn+1)%this.players.length
@@ -93,12 +95,13 @@ class Tijou extends Game{
         this.hasStarted = true
         this.nextRound()
     }
-    CheckEatOnCell(player, pos){
+    CheckEatOnCell(player, pawnIndex, pos){
         for (let i = 0; i < this.players.length; i++) {
             for (let p = 0; p < this.players[i].pawns.length; p++) {
-                console.log(pos, this.players[i].pawns[p])
-                let opponentPawn = this.players[i].pawns[p];
-                if (opponentPawn == pos)this.players[i].pawns[p] = -1
+                if (!(this.players[i].playerId == player.playerId && pawnIndex == p)){
+                    let opponentPawn = this.players[i].pawns[p];
+                    if (opponentPawn == pos)this.players[i].pawns[p] = -1
+                }
             }
         }
     }
@@ -107,7 +110,7 @@ class Tijou extends Game{
             let pawn = player.pawns[pawnIndex]
             for (let n = pawn; n < pawn+dist; n++) {
                 let pos = n%this.boardCellNb
-                this.CheckEatOnCell(player, pos)
+                this.CheckEatOnCell(player, pawnIndex, pos)
             }
         }
         player.move(pawnIndex,dist)
@@ -119,6 +122,7 @@ class Tijou extends Game{
         opponent.pawns[opponentPawnIndex] = temp
     }
     Arrive(player, pawnIndex){
+        console.log("arrive")
         for (let i = 0; i < player.pawns.length; i++) {
             if (player.pawns[i]==-1)return console.log("can't arrive cause not all pawns are on board")
         }
@@ -158,7 +162,6 @@ class Tijou extends Game{
                 break;
             case 11:
                 //TODO verify opponent existence
-                console.log(option)
                 this.Exchange(player, pawnIndex, this.players[option[0]], option[1])
                 break;
             case 14:
@@ -168,7 +171,7 @@ class Tijou extends Game{
                 console.log("card action error on card : "+ card[1])
                 break;
         }
-        this.CheckEatOnCell(player, player.pawns[pawnIndex])
+        this.CheckEatOnCell(player, pawnIndex, player.pawns[pawnIndex])
     }
     playCard(playerId, cardIndex, pawnIndex, action, option=-1){
         let player = this.players[playerId]
