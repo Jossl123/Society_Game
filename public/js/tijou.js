@@ -74,6 +74,7 @@ class Player{
                 break;
 
             case "chooseJoker":
+                document.getElementById("pawns").style.visibility = "visible"
                 this.options.jokerChoice = index
                 document.getElementById("choices").style.visibility = "hidden"
                 this.state = "choosePawn"
@@ -84,6 +85,7 @@ class Player{
         }
     }
     chooseJoker(){
+        document.getElementById("pawns").style.visibility = "hidden"
         this.state = "chooseJoker"
         document.getElementById("choices").style.visibility = "visible"
     }
