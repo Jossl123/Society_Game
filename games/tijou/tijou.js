@@ -116,6 +116,7 @@ class Tijou extends Game{
         player.move(pawnIndex,dist)
     }
     Exchange(player, pawnIndex, opponent, opponentPawnIndex){
+        console.log(player.playerId, pawnIndex, opponent.playerId, opponentPawnIndex)
         let temp = player.pawns[pawnIndex]
         if (temp == -1 || opponent.pawns[opponentPawnIndex] == -1) return console.log("error in exchange")
         player.pawns[pawnIndex] = opponent.pawns[opponentPawnIndex]
@@ -162,7 +163,7 @@ class Tijou extends Game{
                 break;
             case 11:
                 //TODO verify opponent existence
-                console.log(option)
+                console.log("exchnge")
                 this.Exchange(player, pawnIndex, this.players[option.playerId], option.pawnIndex)
                 break;
             case 14:
