@@ -32,7 +32,7 @@ function handleTijou(wss, ws){
                 if (!body.hasOwnProperty("cardIndex"))return send(ws, "error", "card error")
                 if (!body.hasOwnProperty("action"))return send(ws, "error", "card action error")
                 if (!body.hasOwnProperty("pawnIndex"))return send(ws, "error", "pawn error")
-                ws.room.playCard(ws.playerId, body.cardIndex, body.pawnIndex, body.action, (body.hasOwnProperty("option") ? body.option : -1))
+                ws.room.playCard(ws.playerId, body.cardIndex, body.pawnIndex, body.action, body.options)
                 break
             default: console.log(body);
         }

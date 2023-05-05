@@ -5,11 +5,101 @@ ws.onopen = (event) => {
     send("join", {roomId: roomId})
 };
 
-let hand = []
-let pawnsPositions = []
-let choosenCard = -1
-let choosenPawn = -1
-let playerId 
+const actions = {
+    MOVE: "move",
+    ENTER: "enter",
+    BACKWARD: "backward",
+    EXCHANGE: "exchange",
+    ARRIVE: "arrive"
+}
+
+class Player{
+    constructor(playerId){
+        this.hand = []
+        this.playerId = playerId
+        this.state = "waiting"
+        this.action = "move"
+        this.reset()
+    }
+    receiveCards(cards){
+        player.hand = cards
+        this.showHand()
+    }
+    showHand(){
+        let res = ""
+        for (let i = 0; i < this.hand.length; i++) {
+            let card = this.hand[i]
+            res+=`<button class="card" style="transform: rotate(${i*10}deg)" onclick="player.play(${i})"><img src="./img/playing_cards/${toCard(card)}.png"></img></button>`
+        }
+        document.getElementById("hand").innerHTML = res
+    }
+    yourTurn(){
+        document.getElementById("infos").innerHTML = "Your turn"
+        this.state = "chooseCard"
+        document.getElementById("pawns").style.visibility = "visible"
+    }
+    play(index, playerId){
+        switch (this.state) {
+            case "chooseCard":
+                if(playerId)return 
+                if (index < 0 || index >= this.hand.length)return 
+                this.cardIndexChoose = index
+                if (this.hand[this.cardIndexChoose][1] == 14) this.chooseJoker()
+                else this.state = "choosePawn"
+                break;
+            
+            case "choosePawn":
+                this.pawnIndexChoose = index
+                this.state = "chooseAction"
+                if(this.hand[this.cardIndexChoose][1] != 11 && this.options.jokerChoice != 11)document.getElementById("actions").style.visibility = "visible"
+                document.getElementById("pawns").style.visibility = "hidden"
+                break;
+
+            case "chooseAction":
+                console.log(index, playerId)
+                document.getElementById("actions").style.visibility = "hidden"
+                if(this.hand[this.cardIndexChoose][1] == 11 || this.options.jokerChoice == 11){
+                    console.log("valet")
+                    this.options.pawnIndex = index
+                    this.options.playerId = playerId
+                }
+                this.action = index;
+                this.state = "endTurn"
+                this.endTurn()
+                break;
+
+            case "chooseJack":
+                this.options.pawnIndex = index
+                this.options.playerId = playerId
+                break;
+
+            case "chooseJoker":
+                this.options.jokerChoice = index
+                document.getElementById("choices").style.visibility = "hidden"
+                this.state = "choosePawn"
+                break
+
+            default:
+                break;
+        }
+    }
+    chooseJoker(){
+        this.state = "chooseJoker"
+        document.getElementById("choices").style.visibility = "visible"
+    }
+    endTurn(){
+        console.log({cardIndex: this.cardIndexChoose, pawnIndex: this.pawnIndexChoose, action: this.action, options: this.options})
+        send("playCard", {cardIndex: this.cardIndexChoose, pawnIndex: this.pawnIndexChoose, action: this.action, options: this.options})
+        this.reset()
+        document.getElementById("infos").innerHTML = "Opponents turns"
+    }
+    reset(){
+        this.pawnIndexChoose = -1
+        this.cardIndexChoose = -1
+        this.options = {pawnIndex: -1, playerId: -1, jokerChoice: -1}
+    }
+}
+let player
 ws.onmessage = (event) => {
     let data = JSON.parse(event.data)
     let title = data.title
@@ -19,30 +109,33 @@ ws.onmessage = (event) => {
             handleError(body)
             console.log("Error : " + body)
             break;
-        case "playerId": 
-            playerId = body.playerId
+        case "playerId":
+            player = new Player(body.playerId)
             break;
         case "hand":
-            hand = body.cards
-            showHand()
+            player.receiveCards(body.cards)
             break;
         case "pawnsPositions":
-            console.log(body)
-            pawnsPositions = body
-            showBoard()
+            receivePawnsPosition(body)
             break;
         case "gameStarted":
             let s = document.getElementById("start")
             s.parentNode.removeChild(s)
             break;
         case "yourTurn":
-            document.getElementById("infos").innerHTML = "Your turn"
+            player.yourTurn()
             break;
         default:
             console.log(title)
             break;
     }
 };
+
+let pawnsPositions = []
+function receivePawnsPosition(pos){
+    pawnsPositions = pos
+    showBoard()
+}
 
 function handleError(msg){
     switch (msg) {
@@ -76,16 +169,6 @@ function toColor(num){
     let colors = ["red", "green", "blue", "yellow"]
     return colors[num]
 }
-
-function showHand(){
-    res = ""
-    for (let i = 0; i < hand.length; i++) {
-        let card = hand[i]
-        res+=`<button class="card" style="transform: rotate(${i*10}deg)" onclick="chooseCard(${i})"><img src="./img/playing_cards/${toCard(card)}.png"></img></button>`
-    }
-    document.getElementById("hand").innerHTML = res
-}
-
 function getBoardCellId(x, y){
     let id = x
     if(y>0){
@@ -122,8 +205,8 @@ function showBoard(){
                 boardMap+=`<div class="boardCell">`
                 if (pawnInfos.id != -1){
                     boardMap+=`<button `
-                    if (pawnInfos.player == playerId)boardMap+=`onclick="choosePawn(${pawnInfos.id}, ${pawnInfos.player})" style="background-color: ${toColor(pawnInfos.player)}"`
-                    else boardMap+=`onclick="choosePawn(${pawnInfos.id}, ${pawnInfos.player})"`
+                    if (pawnInfos.player == player.playerId)boardMap+=`onclick="player.play(${pawnInfos.id}, ${pawnInfos.player})" style="background-color: ${toColor(pawnInfos.player)}"`
+                    else boardMap+=`onclick="player.play(${pawnInfos.id}, ${pawnInfos.player})"`
                     boardMap+=`>${id}</button>`
                 }
                 boardMap+=`</div>`
@@ -133,72 +216,12 @@ function showBoard(){
         }
     }
     document.getElementById("board").innerHTML = boardMap
-    for (let j = 0; j < pawnsPositions[playerId].length; j++) {
-        if (pawnsPositions[playerId][j] == -1)document.getElementById("board").innerHTML+=`<button class="pawn" onclick="choosePawn(${j}, ${playerId})" >pawn</button>`
+    document.getElementById("pawns").innerHTML = ""
+    for (let j = 0; j < pawnsPositions[player.playerId].length; j++) {
+        if (pawnsPositions[player.playerId][j] == -1)document.getElementById("pawns").innerHTML+=`<button class="pawn" onclick="player.play(${j}, ${player.playerId})" >pawn</button>`
     }
 }
 
 function start(){
     send("startGame")
-}
-
-function chooseCard(i){
-    choosenCard = i
-    document.getElementById("infos").innerHTML = "Choose a pawn"
-}
-
-function choosePawn(i,playerIdClick){
-    if(choosenCard != -1){
-        if(hand[choosenCard][1]==11){
-            if (choosenPawn==-1)choosenPawn = i
-            else {
-                jOption.playerId = playerIdClick
-                jOption.pawnIndex = i
-                playCard(choosenCard, choosenPawn, "exchange")
-            }
-            return
-        }
-        if(playerId != playerIdClick)return 
-        choosenPawn = i
-        if (hand[choosenCard][1] == 14){
-            document.getElementById("choices").style.visibility = "visible"
-        }else playCard(choosenCard, choosenPawn, action)
-    }
-}
-
-let jokerOption = 2
-let jOption = {playerId: -1, pawnIndex: -1}
-function changeOption(o){
-    jokerOption = o
-    if(choosenCard != -1 && choosenPawn != -1)playCard(choosenCard, choosenPawn, action)
-    document.getElementById("choices").style.visibility = "hidden"
-}
-
-let action = "move"
-function changeAction(n){
-    action = n
-}
-
-function askAction(cardNb, pawnIndex){
-    if (pawnsPositions[playerId][pawnIndex] == -1)action = "enter"
-    return action
-}
-
-function askJokerOption(){
-    return jokerOption;
-}
-
-function askExchangeOption(){
-    console.log(jOption)
-    return jOption
-}
-
-function playCard(index, pawnIndex){
-    option = askAction(hand[index][1], pawnIndex)
-    if (hand[index][1] == 14) send("playCard", {cardIndex: index, pawnIndex: pawnIndex, action: action, option: askJokerOption()})
-    else if (hand[index][1] == 11) send("playCard", {cardIndex: index, pawnIndex: pawnIndex, action: action, option: askExchangeOption()})
-    else send("playCard", {cardIndex: index, pawnIndex: pawnIndex, action: action})
-    choosenPawn = -1
-    choosenCard = -1
-    document.getElementById("infos").innerHTML = "Opponents turns"
 }

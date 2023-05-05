@@ -36,7 +36,7 @@ class Tijou extends Game{
                 this.cards.push([i, j+1])
             }
         }
-        for (let i = 0; i < 2; i++) {this.cards.push([4, 14])}//joker
+        for (let i = 0; i < 40; i++) {this.cards.push([4, 14])}//joker
         this.shuffle(this.cards)
         this.discard = []
         this.players = []
@@ -129,7 +129,7 @@ class Tijou extends Game{
         }
         player.pawns[pawnIndex] = this.boardCellNb
     }
-    cardAction(player, pawnIndex, card, action, option=-1){
+    cardAction(player, pawnIndex, card, action, options){
         switch (card[1]) {
             case 3:
             case 6:
@@ -163,11 +163,11 @@ class Tijou extends Game{
                 break;
             case 11:
                 //TODO verify opponent existence
-                console.log("exchnge")
-                this.Exchange(player, pawnIndex, this.players[option.playerId], option.pawnIndex)
+                console.log("exchnge", options)
+                this.Exchange(player, pawnIndex, this.players[options.playerId], options.pawnIndex)
                 break;
             case 14:
-                this.cardAction(player, pawnIndex, [0, option], action)
+                this.cardAction(player, pawnIndex, [0, options.jokerChoice], action, options)
                 break;
             default:
                 console.log("card action error on card : "+ card[1])
