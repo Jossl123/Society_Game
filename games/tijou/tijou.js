@@ -24,7 +24,7 @@ class Player{
         if(this.pawns[i]!=-1){
             this.pawns[i] = (this.pawns[i] + n)%this.boardCellNb
             if (this.pawns[i]<0)this.pawns[i]+=this.boardCellNb
-            if(this.pawns[i] % (this.boardRowSize-1) == Math.floor(this.boardRowSize / 2)
+            if(modulo(this.pawns[i], (this.boardRowSize-1)) == Math.floor(this.boardRowSize / 2)
             && (this.pawns[i] != this.arrivePos)){
                 this.pawns[i] = ((this.boardRowSize-1)*2 + this.pawns[i])%this.boardCellNb
             }
@@ -47,7 +47,7 @@ class Tijou extends Game{
                 this.cards.push([i, j+1])
             }
         }
-        for (let i = 0; i < 40; i++) {this.cards.push([4, 14])}//joker
+        for (let i = 0; i < 100; i++) {this.cards.push([4, 14])}//joker
         this.shuffle(this.cards)
         this.discard = []
         this.players = []
@@ -119,12 +119,19 @@ class Tijou extends Game{
     MoveAction(player, dist, pawnIndex, eat=false){
         if(eat){
             let pawn = player.pawns[pawnIndex]
-            for (let n = pawn; n < pawn+dist; n++) {
-                let pos = n%this.boardCellNb
-                this.CheckEatOnCell(player, pawnIndex, pos)
+            if(dist < 0){
+                for (let n = pawn+dist; n < pawn; n++) {
+                    let pos = modulo(n,this.boardCellNb)
+                    this.CheckEatOnCell(player, pawnIndex, pos)
+                }
+            }
+            else{
+                for (let n = pawn; n < pawn+dist; n++) {
+                    let pos = modulo(n,this.boardCellNb)
+                    this.CheckEatOnCell(player, pawnIndex, pos)
+                }
             }
         }
-        console.log(modulo(player.pawns[pawnIndex] + dist,this.boardCellNb), player.arrivePos)
         if((player.pawns[pawnIndex] + dist) % (this.boardRowSize-1) == Math.floor(this.boardRowSize / 2) 
         && (modulo(player.pawns[pawnIndex] + dist),this.boardCellNb) != player.arrivePos){
             this.CheckEatOnCell(player, pawnIndex, player.pawns[pawnIndex] + dist)
@@ -144,6 +151,7 @@ class Tijou extends Game{
         player.pawns[pawnIndex] = this.boardCellNb
     }
     cardAction(player, pawnIndex, card, action, options){
+        console.log(card[1], action, options)
         switch (card[1]) {
             case 3:
             case 6:
