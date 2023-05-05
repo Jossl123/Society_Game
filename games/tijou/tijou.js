@@ -151,7 +151,6 @@ class Tijou extends Game{
         player.pawns[pawnIndex] = this.boardCellNb
     }
     cardAction(player, pawnIndex, card, action, options){
-        console.log(card[1], action, options)
         switch (card[1]) {
             case 3:
             case 6:
