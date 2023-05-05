@@ -187,6 +187,7 @@ function askJokerOption(){
 }
 
 function askExchangeOption(){
+    console.log(jOption)
     return jOption
 }
 
