@@ -204,7 +204,7 @@ function showBoard(){
             if(onBoard){
                 let id = getBoardCellId(x, y)
                 let pawnInfos = getPawnOnCell(id)
-                boardMap+=`<div class="boardCell">`
+                boardMap+=`<div class="boardCell">${id}`
                 if (pawnInfos.id != -1){
                     boardMap+=`<button `
                     if (pawnInfos.player == player.playerId)boardMap+=`onclick="player.play(${pawnInfos.id}, ${pawnInfos.player})" style="background-color: ${toColor(pawnInfos.player)}"`

@@ -8,7 +8,8 @@ class Player{
         this.playerId = playerId
         this.boardRowSize = 10
         this.boardCellNb = this.boardRowSize*2 + (this.boardRowSize-2)*2
-        this.enterPos = playerId * (this.boardRowSize-1)
+        this.enterPos = modulo(playerId * (this.boardRowSize-1), this.boardCellNb)
+        this.arrivePos = modulo((playerId-1) * (this.boardRowSize-1) + Math.floor(this.boardRowSize/2), this.boardCellNb)
     }
     turn(){
         send(this.ws, "yourTurn")
@@ -23,8 +24,19 @@ class Player{
         if(this.pawns[i]!=-1){
             this.pawns[i] = (this.pawns[i] + n)%this.boardCellNb
             if (this.pawns[i]<0)this.pawns[i]+=this.boardCellNb
+            if(this.pawns[i] % (this.boardRowSize-1) == Math.floor(this.boardRowSize / 2)
+            && (this.pawns[i] != this.arrivePos)){
+                console.log("diag2")
+                this.pawns[i] = ((this.boardRowSize-1)*2 + this.pawns[i])%this.boardCellNb
+            }
         }
     }
+}
+
+function modulo(i, m){
+    i = i % m
+    while(i < 0)i += m
+    return i
 }
 
 class Tijou extends Game{
@@ -113,10 +125,15 @@ class Tijou extends Game{
                 this.CheckEatOnCell(player, pawnIndex, pos)
             }
         }
+        console.log(modulo(player.pawns[pawnIndex] + dist,this.boardCellNb), player.arrivePos)
+        if((player.pawns[pawnIndex] + dist) % (this.boardRowSize-1) == Math.floor(this.boardRowSize / 2) 
+        && (modulo(player.pawns[pawnIndex] + dist),this.boardCellNb) != player.arrivePos){
+            console.log("diag1")
+            this.CheckEatOnCell(player, pawnIndex, player.pawns[pawnIndex] + dist)
+        }
         player.move(pawnIndex,dist)
     }
     Exchange(player, pawnIndex, opponent, opponentPawnIndex){
-        console.log(player.playerId, pawnIndex, opponent.playerId, opponentPawnIndex)
         let temp = player.pawns[pawnIndex]
         if (temp == -1 || opponent.pawns[opponentPawnIndex] == -1) return console.log("error in exchange")
         player.pawns[pawnIndex] = opponent.pawns[opponentPawnIndex]
