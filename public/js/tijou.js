@@ -59,6 +59,7 @@ class Player{
                 this.pawnIndexChoose = index
                 this.state = "chooseAction"
                 let possibleAction = this.possiblesAction(this.hand[this.cardIndexChoose])
+                console.log(possibleAction)
                 if(this.hand[this.cardIndexChoose][1] != 11 && this.options.jokerChoice != 11){
                     this.showActions(possibleAction)
                     document.getElementById("actions").style.visibility = "visible"
@@ -70,7 +71,6 @@ class Player{
             case "chooseAction":
                 document.getElementById("actions").style.visibility = "hidden"
                 if(this.hand[this.cardIndexChoose][1] == 11 || this.options.jokerChoice == 11){
-                    console.log("valet")
                     this.options.pawnIndex = index
                     this.options.playerId = playerId
                 }
@@ -119,6 +119,7 @@ class Player{
     }
     possiblesAction(card){
         let res = []
+        if(card[1] == 14)return this.possiblesAction([0, this.options.jokerChoice])
         switch (card[1]) {
             case 1:
             case 2:
@@ -132,20 +133,33 @@ class Player{
             case 12:
             case 13:
                 res.push(actions.MOVE)
+                break
+        }
+        switch (card[1]) {
             case 1:
             case 2:
             case 12:
             case 13:
                 res.push(actions.ENTER)
+                break
+        }
+        switch (card[1]) {
             case 4:
             case 2:
                 res.push(actions.BACKWARD)
+                break
+        }
+        switch (card[1]) {
             case 11:
                 res.push(actions.EXCHANGE)
+                break
+        }
+        switch (card[1]) {
             case 2:
             case 4:
             case 10:
                 res.push(actions.ARRIVE)
+                break
         }
         return res
     }
