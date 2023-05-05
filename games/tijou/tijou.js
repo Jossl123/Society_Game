@@ -162,7 +162,8 @@ class Tijou extends Game{
                 break;
             case 11:
                 //TODO verify opponent existence
-                this.Exchange(player, pawnIndex, this.players[option[0]], option[1])
+                console.log(option)
+                this.Exchange(player, pawnIndex, this.players[option.playerId], option.pawnIndex)
                 break;
             case 14:
                 this.cardAction(player, pawnIndex, [0, option], action)

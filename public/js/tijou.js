@@ -122,7 +122,7 @@ function showBoard(){
                 boardMap+=`<div class="boardCell">`
                 if (pawnInfos.id != -1){
                     boardMap+=`<button `
-                    if (pawnInfos.player == playerId)boardMap+=`onclick="choosePawn(${pawnInfos.id})" style="background-color: ${toColor(pawnInfos.player)}"`
+                    if (pawnInfos.player == playerId)boardMap+=`onclick="choosePawn(${pawnInfos.id}, ${pawnInfos.player})" style="background-color: ${toColor(pawnInfos.player)}"`
                     boardMap+=`>${id}</button>`
                 }
                 boardMap+=`</div>`
@@ -144,13 +144,34 @@ function start(){
 function chooseCard(i){
     choosenCard = i
     document.getElementById("infos").innerHTML = "Choose a pawn"
-    if(choosenPawn !=-1) playCard(choosenCard, choosenPawn)
 }
 
-function choosePawn(i){
-    choosenPawn = i
-    if(choosenCard != -1)playCard(choosenCard, choosenPawn)
+function choosePawn(i,playerId){
+    if(choosenCard != -1){
+        if(hand[choosenCard][1]==11){
+            if (choosenPawn==-1)choosenPawn = i
+            else {
+                jOption.playerId = playerId
+                jOption.pawnIndex = i
+                playCard(choosenCard, choosenPawn, "exchange")
+            }
+            return
+        }
+        choosenPawn = i
+        if (hand[choosenCard][1] == 14){
+            document.getElementById("choices").style.visibility = "visible"
+        }else playCard(choosenCard, choosenPawn, action)
+    }
 }
+
+let jokerOption = 2
+let jOption = {playerId: -1, pawnIndex: -1}
+function changeOption(o){
+    jokerOption = o
+    if(choosenCard != -1 && choosenPawn != -1)playCard(choosenCard, choosenPawn, action)
+    document.getElementById("choices").style.visibility = "hidden"
+}
+
 let action = "move"
 function changeAction(n){
     action = n
@@ -162,11 +183,12 @@ function askAction(cardNb, pawnIndex){
 }
 
 function askJokerOption(){
-    return 2;
+    return jokerOption;
 }
 
 function askExchangeOption(){
-    return [0, 0]
+    console.log(jOption)
+    return jOption
 }
 
 function playCard(index, pawnIndex){
