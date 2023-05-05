@@ -33,6 +33,12 @@ class Player{
         }
         document.getElementById("hand").innerHTML = res
     }
+    showActions(possibleAction){
+        document.getElementById("actions").innerHTML = ""
+        for (let i = 0; i < possibleAction.length; i++) {
+            document.getElementById("actions").innerHTML += `<button onclick="player.play('${possibleAction[i]}')">${possibleAction[i]}</button>`
+        }
+    }
     yourTurn(){
         document.getElementById("infos").innerHTML = "Your turn"
         this.state = "chooseCard"
@@ -52,12 +58,16 @@ class Player{
             case "choosePawn":
                 this.pawnIndexChoose = index
                 this.state = "chooseAction"
-                if(this.hand[this.cardIndexChoose][1] != 11 && this.options.jokerChoice != 11)document.getElementById("actions").style.visibility = "visible"
+                let possibleAction = this.possiblesAction()
+                if(this.hand[this.cardIndexChoose][1] != 11 && this.options.jokerChoice != 11){
+                    this.showActions(possibleAction)
+                    document.getElementById("actions").style.visibility = "visible"
+                }
                 document.getElementById("pawns").style.visibility = "hidden"
+                if(possibleAction.length == 1)this.play(possibleAction[0])
                 break;
 
             case "chooseAction":
-                console.log(index, playerId)
                 document.getElementById("actions").style.visibility = "hidden"
                 if(this.hand[this.cardIndexChoose][1] == 11 || this.options.jokerChoice == 11){
                     console.log("valet")
@@ -106,6 +116,38 @@ class Player{
         this.cardIndexChoose = -1
         this.options = {pawnIndex: -1, playerId: -1, jokerChoice: -1}
         this.state = "chooseCard"
+    }
+    possiblesAction(card){
+        let res = []
+        switch (card[1]) {
+            case 1:
+            case 2:
+            case 3:
+            case 5:
+            case 6:
+            case 7:
+            case 8:
+            case 9:
+            case 10:
+            case 12:
+            case 13:
+                res+=actions.MOVE
+            case 1:
+            case 2:
+            case 12:
+            case 13:
+                res+=actions.ENTER
+            case 4:
+            case 2:
+                res+=actions.BACKWARD
+            case 11:
+                res+=actions.EXCHANGE
+            case 2:
+            case 4:
+            case 10:
+                res+=actions.ARRIVE
+        }
+        return res
     }
 }
 let player
