@@ -46,6 +46,7 @@ class Player{
                 this.cardIndexChoose = index
                 if (this.hand[this.cardIndexChoose][1] == 14) this.chooseJoker()
                 else this.state = "choosePawn"
+                document.getElementById("cancelChoice").style.visibility = "visible"
                 break;
             
             case "choosePawn":
@@ -93,12 +94,18 @@ class Player{
         console.log({cardIndex: this.cardIndexChoose, pawnIndex: this.pawnIndexChoose, action: this.action, options: this.options})
         send("playCard", {cardIndex: this.cardIndexChoose, pawnIndex: this.pawnIndexChoose, action: this.action, options: this.options})
         this.reset()
+        this.state = "waiting"
         document.getElementById("infos").innerHTML = "Opponents turns"
     }
     reset(){
+        document.getElementById("pawns").style.visibility = "visible"
+        document.getElementById("choices").style.visibility = "hidden"
+        document.getElementById("actions").style.visibility = "hidden"
+        document.getElementById("cancelChoice").style.visibility = "hidden"
         this.pawnIndexChoose = -1
         this.cardIndexChoose = -1
         this.options = {pawnIndex: -1, playerId: -1, jokerChoice: -1}
+        this.state = "chooseCard"
     }
 }
 let player

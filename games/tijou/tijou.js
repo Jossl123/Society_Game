@@ -26,7 +26,6 @@ class Player{
             if (this.pawns[i]<0)this.pawns[i]+=this.boardCellNb
             if(this.pawns[i] % (this.boardRowSize-1) == Math.floor(this.boardRowSize / 2)
             && (this.pawns[i] != this.arrivePos)){
-                console.log("diag2")
                 this.pawns[i] = ((this.boardRowSize-1)*2 + this.pawns[i])%this.boardCellNb
             }
         }
@@ -128,7 +127,6 @@ class Tijou extends Game{
         console.log(modulo(player.pawns[pawnIndex] + dist,this.boardCellNb), player.arrivePos)
         if((player.pawns[pawnIndex] + dist) % (this.boardRowSize-1) == Math.floor(this.boardRowSize / 2) 
         && (modulo(player.pawns[pawnIndex] + dist),this.boardCellNb) != player.arrivePos){
-            console.log("diag1")
             this.CheckEatOnCell(player, pawnIndex, player.pawns[pawnIndex] + dist)
         }
         player.move(pawnIndex,dist)
@@ -140,7 +138,6 @@ class Tijou extends Game{
         opponent.pawns[opponentPawnIndex] = temp
     }
     Arrive(player, pawnIndex){
-        console.log("arrive")
         for (let i = 0; i < player.pawns.length; i++) {
             if (player.pawns[i]==-1)return console.log("can't arrive cause not all pawns are on board")
         }
@@ -180,7 +177,6 @@ class Tijou extends Game{
                 break;
             case 11:
                 //TODO verify opponent existence
-                console.log("exchnge", options)
                 this.Exchange(player, pawnIndex, this.players[options.playerId], options.pawnIndex)
                 break;
             case 14:
