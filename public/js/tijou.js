@@ -144,13 +144,24 @@ function start(){
 function chooseCard(i){
     choosenCard = i
     document.getElementById("infos").innerHTML = "Choose a pawn"
-    if(choosenPawn !=-1) playCard(choosenCard, choosenPawn)
 }
 
 function choosePawn(i){
     choosenPawn = i
-    if(choosenCard != -1)playCard(choosenCard, choosenPawn)
+    if(choosenCard != -1){
+        if (hand[choosenCard][1] == 14){
+            document.getElementById("choices").style.visibility = "visible"
+        }else playCard(choosenCard, choosenPawn, action)
+    }
 }
+
+let jokerOption = 2
+function changeOption(o){
+    jokerOption = o
+    if(choosenCard != -1 && choosenPawn != -1)playCard(choosenCard, choosenPawn, action)
+    document.getElementById("choices").style.visibility = "hidden"
+}
+
 let action = "move"
 function changeAction(n){
     action = n
@@ -162,7 +173,7 @@ function askAction(cardNb, pawnIndex){
 }
 
 function askJokerOption(){
-    return 2;
+    return jokerOption;
 }
 
 function askExchangeOption(){
