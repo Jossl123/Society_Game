@@ -122,7 +122,7 @@ function showBoard(){
                 boardMap+=`<div class="boardCell">`
                 if (pawnInfos.id != -1){
                     boardMap+=`<button `
-                    if (pawnInfos.player == playerId)boardMap+=`onclick="choosePawn(${pawnInfos.id})" style="background-color: ${toColor(pawnInfos.player)}"`
+                    if (pawnInfos.player == playerId)boardMap+=`onclick="choosePawn(${pawnInfos.id}, ${pawnInfos.player})" style="background-color: ${toColor(pawnInfos.player)}"`
                     boardMap+=`>${id}</button>`
                 }
                 boardMap+=`</div>`
@@ -146,9 +146,18 @@ function chooseCard(i){
     document.getElementById("infos").innerHTML = "Choose a pawn"
 }
 
-function choosePawn(i){
-    choosenPawn = i
+function choosePawn(i,playerId){
     if(choosenCard != -1){
+        if(hand[choosenCard][1]==11){
+            if (choosenPawn==-1)choosenPawn = i
+            else {
+                jOption.playerId = playerId
+                jOption.pawnIndex = i
+                playCard(choosenCard, choosenPawn, "exchange")
+            }
+            return
+        }
+        choosenPawn = i
         if (hand[choosenCard][1] == 14){
             document.getElementById("choices").style.visibility = "visible"
         }else playCard(choosenCard, choosenPawn, action)
@@ -156,6 +165,7 @@ function choosePawn(i){
 }
 
 let jokerOption = 2
+let jOption = {playerId: -1, pawnIndex: -1}
 function changeOption(o){
     jokerOption = o
     if(choosenCard != -1 && choosenPawn != -1)playCard(choosenCard, choosenPawn, action)
@@ -177,7 +187,7 @@ function askJokerOption(){
 }
 
 function askExchangeOption(){
-    return [0, 0]
+    return jOption
 }
 
 function playCard(index, pawnIndex, action = "move"){
