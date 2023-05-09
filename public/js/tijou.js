@@ -207,7 +207,9 @@ function handleError(msg){
         case "notYourTurn":
             document.getElementById("infos").innerHTML = "Not your turn"
             break;
-    
+        case "illegalMove":
+            player.reset()
+            player.yourTurn()
         default:
             document.getElementsByTagName("body")[0].innerHTML = msg
             break;

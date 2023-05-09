@@ -183,7 +183,7 @@ class Tijou extends Game{
                 this.MoveAction(player, card[1], pawnIndex, true)
                 break;
             case 11:
-                //TODO verify opponent existence
+                if (this.players.length <= options.playerId)return send(ws, "error", "illegalMove")
                 this.Exchange(player, pawnIndex, this.players[options.playerId], options.pawnIndex)
                 break;
             case 14:
