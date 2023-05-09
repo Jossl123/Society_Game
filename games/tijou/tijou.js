@@ -47,7 +47,7 @@ class Tijou extends Game{
                 this.cards.push([i, j+1])
             }
         }
-        for (let i = 0; i < 100; i++) {this.cards.push([4, 14])}//joker
+        for (let i = 0; i < 2; i++) {this.cards.push([4, 14])}//joker
         this.shuffle(this.cards)
         this.discard = []
         this.players = []
